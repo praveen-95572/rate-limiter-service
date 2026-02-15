@@ -18,8 +18,8 @@ func main() {
 		log.Fatalf("Redis not available: %v", err)
 	}
 
-	// tokenBucket := limiter.NewTokenBucket(redisStore, 2, 1)
-	tokenBucket := limiter.NewSlidingWindow(redisStore, 2, 1)
+	tokenBucket := limiter.NewTokenBucket(redisStore, 2, 1)
+	// tokenBucket := limiter.NewSlidingWindow(redisStore, 120, 1)
 	r := gin.Default()
 	r.Use(limiter.RateLimitMiddleware(tokenBucket))
 

@@ -25,7 +25,17 @@ func (r *RedisStore) Eval(
 	keys []string,
 	args ...interface{},
 ) (interface{}, error) {
-	return r.Client.Eval(ctx, script, keys, args...).Result()
+	cmd := r.Client.Eval(ctx, script, keys, args...)
+	result, err := cmd.Result()
+	if err == redis.Nil {
+		return int64(0), nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
 func (r *RedisStore) Close() error {

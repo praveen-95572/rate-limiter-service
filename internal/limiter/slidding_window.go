@@ -28,13 +28,16 @@ func (sw *SlidingWindow) Allow(ctx context.Context, key string) (bool, error) {
 	windowStart := now - int64(sw.window.Seconds())
 
 	pipe := sw.store.Client.TxPipeline()
-
 	pipe.ZRemRangeByScore(ctx, key, "0", fmt.Sprintf("%d", windowStart))
 	pipe.ZAdd(ctx, key, redis.Z{Score: float64(now), Member: now})
 	count := pipe.ZCard(ctx, key)
 	pipe.Expire(ctx, key, sw.window)
-
-	_, err := pipe.Exec(ctx)
+	cmds, err := pipe.Exec(ctx)
+	for _, cmd := range cmds {
+		if cmd.Err() != nil && cmd.Err() != redis.Nil {
+			fmt.Println("Redis command failed:", cmd.Err())
+		}
+	}
 	if err != nil {
 		return false, err
 	}

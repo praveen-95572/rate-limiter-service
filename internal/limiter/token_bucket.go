@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/praveen-95572/rate-limiter-service/internal/adaptor/persistance"
@@ -32,7 +33,7 @@ local data = redis.call("HMGET", key, "tokens", "timestamp")
 local tokens = tonumber(data[1])
 local timestamp = tonumber(data[2])
 
-if tokens == nil then
+if tokens == nil or timestamp == nil then
 	tokens = capacity
 	timestamp = now
 end
@@ -66,6 +67,7 @@ func (tb *TokenBucket) Allow(ctx context.Context, key string) (bool, error) {
 	)
 
 	if err != nil {
+		log.Printf("Error for key %s is: %v", key, err)
 		return false, err
 	}
 
